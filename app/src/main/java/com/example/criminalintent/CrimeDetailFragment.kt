@@ -20,13 +20,6 @@ class CrimeDetailFragment: Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        crime = CrimeModel(
-            UUID.randomUUID(),
-            title = "",
-            date = Date(),
-            isSolved = false,
-            isCriminal = false
-        )
     }
 
     override fun onCreateView(
