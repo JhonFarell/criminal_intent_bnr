@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:app="http://schemas.android.com/apk/res-auto"
-             android:id="@+id/nav_graph">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/crimesListFragment">
 
+    <fragment
+        android:id="@+id/crimesListFragment"
+        android:name="com.example.criminalintent.crime_list.CrimesListFragment"
+        android:label="CrimesListFragment"
+        tools:layout="@layout/fragment_crime_list">
+        <action
+            android:id="@+id/show_crime_details"
+            app:destination="@id/crimeDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/crimeDetailFragment"
+        android:name="com.example.criminalintent.crime_detail.CrimeDetailFragment"
+        android:label="CrimeDetailFragment"
+        tools:layout="@layout/fragment_crime_detail">
+        <argument
+            android:name="crimeId"
+            app:argType="java.util.UUID" />
+        <action
+            android:id="@+id/back_to_list"
+            app:destination="@id/crimesListFragment"
+            app:popUpTo="@+id/crimesListFragment"/>
+    </fragment>
 </navigation>

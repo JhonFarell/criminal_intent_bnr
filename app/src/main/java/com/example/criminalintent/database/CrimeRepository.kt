@@ -1,4 +1,4 @@
-package com.example.criminalintent
+package com.example.criminalintent.database
 
 import android.app.Application
 import android.content.Context
@@ -8,12 +8,19 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.criminalintent.CrimeModel
 import com.example.criminalintent.database.CrimeDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 private const val DATABASE_NAME = "crime-database"
 
-class CrimeRepository private constructor(context: Context){
+
+
+class CrimeRepository private constructor(context: Context,
+                                          private val coroutineScope: CoroutineScope = GlobalScope){
 
     private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
@@ -30,8 +37,13 @@ class CrimeRepository private constructor(context: Context){
         .addMigrations(MIGRATION_1_2)
         .build()
 
+
     suspend fun getCrimes(): List<CrimeModel> = database.crimeDao().getCrimes()
     suspend fun getCrime(id: UUID): CrimeModel = database.crimeDao().getCrime(id)
+
+    fun updateCrime(crime: CrimeModel) {
+       coroutineScope.launch {database.crimeDao().updateCrime(crime)}
+    }
 
     companion object {
         private var INSTANCE: CrimeRepository? = null

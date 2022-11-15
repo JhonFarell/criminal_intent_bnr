@@ -1,24 +1,18 @@
-package com.example.criminalintent
+package com.example.criminalintent.crime_list
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.motion.utils.ViewState
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
+import com.example.criminalintent.CrimeListAdapter
 import com.example.criminalintent.databinding.FragmentCrimeListBinding
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CrimesListFragment(): Fragment() {
@@ -38,7 +32,8 @@ class CrimesListFragment(): Fragment() {
                 binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes) {
                    crimeId -> findNavController()
                         .navigate(
-                            CrimesListFragmentDirections.showCrimeDetails(crimeId))
+                            CrimesListFragmentDirections.showCrimeDetails(crimeId)
+                        )
                 }
             }
         }
