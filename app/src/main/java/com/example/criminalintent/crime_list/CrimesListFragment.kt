@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
@@ -33,9 +34,12 @@ class CrimesListFragment(): Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                Log.d("Fragment", "Launched")
                 var crimes = crimeListViewModel.loadCrimes()
-                binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes)
+                binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes) {
+                   crimeId -> findNavController()
+                        .navigate(
+                            CrimesListFragmentDirections.showCrimeDetails(crimeId))
+                }
             }
         }
 

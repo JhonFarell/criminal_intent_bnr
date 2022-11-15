@@ -6,10 +6,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.criminalintent.databinding.ListItemCrimeBinding
+import java.util.UUID
 
 class CrimeHolder (private val binding: ListItemCrimeBinding)
         : RecyclerView.ViewHolder(binding.root) {
-                fun bind (crime: CrimeModel) {
+                fun bind (crime: CrimeModel, onCrimeClicked:(crimeId: UUID) -> Unit) {
                         binding.crimeNumber.text = crime.title
                         binding.crimeDescription.text = crime.date.toString()
 
@@ -22,9 +23,7 @@ class CrimeHolder (private val binding: ListItemCrimeBinding)
                         }else {View.INVISIBLE}
 
                         binding.root.setOnClickListener {
-                                Toast.makeText(binding.root.context,
-                                        "Fuck you Joe Rogan!",
-                                        Toast.LENGTH_SHORT).show()
+                                onCrimeClicked(crime.id)
                         }
                         binding.isCriminal.setOnClickListener {
                                 Toast.makeText(binding.root.context,
@@ -35,7 +34,9 @@ class CrimeHolder (private val binding: ListItemCrimeBinding)
 
         }
 
-class CrimeListAdapter(private val crimes: List<CrimeModel>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class CrimeListAdapter(private val crimes: List<CrimeModel>,
+                       private val onCrimeClicked: (crimeId: UUID) -> Unit
+): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
                 val inflater = LayoutInflater.from(parent.context)
                 val bindingCrime = ListItemCrimeBinding.inflate(inflater, parent, false)
@@ -44,7 +45,7 @@ class CrimeListAdapter(private val crimes: List<CrimeModel>): RecyclerView.Adapt
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                 var crime = crimes[position]
 
-                (holder as CrimeHolder).bind(crime)
+                (holder as CrimeHolder).bind(crime, onCrimeClicked)
         }
 
         override fun getItemCount(): Int = crimes.size

@@ -10,17 +10,12 @@ import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
 import java.util.*
 
 class CrimeDetailFragment: Fragment() {
-    private lateinit var crime: CrimeModel
     private var _binding: FragmentCrimeDetailBinding? = null
     private val binding
     get() = checkNotNull(_binding) {
         "Can't access binding couse it's null."
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,17 +31,16 @@ class CrimeDetailFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
-            crimeTitle.doOnTextChanged{
-                text, _, _, _ -> crime.copy(title = text.toString())
+            crimeTitle.doOnTextChanged{ text, _, _, _ ->
+
             }
             crimeDate.apply {
-                text = crime.date.toString()
                 isEnabled = false
             }
 
             crimeSolved.setOnCheckedChangeListener{
                 _, isChecked ->
-                crime = crime.copy(isSolved = isChecked)
+
             }
         }
 
