@@ -6,6 +6,8 @@ import com.example.criminalintent.CrimeModel
 import com.example.criminalintent.database.CrimeRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.*
 
 class CrimeListViewModel: ViewModel() {
     private val crimeRepository = CrimeRepository.get()

@@ -26,5 +26,29 @@
             android:id="@+id/back_to_list"
             app:destination="@id/crimesListFragment"
             app:popUpTo="@+id/crimesListFragment"/>
+        <action
+            android:id="@+id/select_date"
+            app:destination="@id/datePickerFragment" />
+        <action
+            android:id="@+id/select_time"
+            app:destination="@id/timePickerFragment" />
     </fragment>
+    <dialog
+        android:id="@+id/datePickerFragment"
+        android:name="com.example.criminalintent.dialog.DatePickerFragment"
+        android:label="DialogPickerFragment" >
+        <argument
+            android:name="crimeDate"
+            app:argType="java.util.Date" />
+    </dialog>
+    <dialog
+        android:id="@+id/timePickerFragment"
+        android:name="com.example.criminalintent.dialog.TimePickerFragment"
+        android:label="TimePickerDialog">
+
+
+        <argument
+            android:name="crimeTime"
+            app:argType="java.util.Date" />
+    </dialog>
 </navigation>

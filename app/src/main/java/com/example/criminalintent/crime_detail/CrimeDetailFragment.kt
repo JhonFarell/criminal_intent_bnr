@@ -1,29 +1,26 @@
 package com.example.criminalintent.crime_detail
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.transaction
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.CrimeModel
-import com.example.criminalintent.R
 import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
+import com.example.criminalintent.dialog.DatePickerFragment
+import com.example.criminalintent.dialog.TimePickerFragment
 import kotlinx.coroutines.launch
+import java.sql.Time
 import java.util.*
 
 class CrimeDetailFragment: Fragment() {
@@ -85,10 +82,6 @@ class CrimeDetailFragment: Fragment() {
                 }
             }
 
-            crimeDate.apply {
-                isEnabled = false
-            }
-
             crimeSolved.setOnCheckedChangeListener{
                 _, isChecked ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
@@ -105,6 +98,25 @@ class CrimeDetailFragment: Fragment() {
 
         }
 
+        setFragmentResultListener(
+            DatePickerFragment.REQUEST_KEY_DATE
+        ) { _, bundle ->  
+            val newDate =
+                bundle.getSerializable(DatePickerFragment.BUNDLE_KEY_DATE) as Date
+            crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
+        }
+
+        setFragmentResultListener(
+            TimePickerFragment.REQUEST_KEY_TIME
+        ) {
+            _, bundle ->
+            val newTime =
+                bundle.getSerializable(TimePickerFragment.BUNDlE_KEY_TIME) as Date
+
+
+            crimeDetailViewModel.updateCrime { it.copy(date = newTime) }
+        }
+
     }
 
     override fun onDestroyView() {
@@ -117,9 +129,22 @@ class CrimeDetailFragment: Fragment() {
             if (crimeTitle.text.toString() != crime.title) {
                 crimeTitle.setText(crime.title)
             }
-            crimeDate.text = crime.date.toString()
+            crimeDate.text = crimeDetailViewModel.dateFormat(crime.date)
+            crimeTime.text = crimeDetailViewModel.timeFormat(crime.date)
             crimeSolved.isChecked = crime.isSolved
             crimeIsCriminal.isChecked = crime.isCriminal
+
+            crimeDate.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectDate(crime.date)
+                )
+            }
+
+            crimeTime.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectTime(crime.date)
+                )
+            }
         }
     }
 }

@@ -11,25 +11,31 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
 
-class DialogPickerFragment: DialogFragment() {
+class DatePickerFragment: DialogFragment() {
 
-    private val args: DialogPickerFragmentArgs by navArgs()
+    private val args: DatePickerFragmentArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
+
+        val cal = Calendar.getInstance()
+        cal.time = args.crimeDate
+
         val onDateListener = DatePickerDialog.OnDateSetListener {
                 _: DatePicker, year: Int, month: Int, day: Int ->
-            val resultDate = GregorianCalendar(year, month, day).time
+
+            val hour = cal.get(Calendar.HOUR)
+            val minute = cal.get(Calendar.MINUTE)
+            val resultDate = GregorianCalendar(year, month, day, hour, minute).time
 
             setFragmentResult(REQUEST_KEY_DATE,
                                 bundleOf(BUNDLE_KEY_DATE to resultDate)
             )
         }
-        val calendar = Calendar.getInstance()
-        calendar.time = args.crimeDate
-        val initialYear = calendar.get(Calendar.YEAR)
-        val initialMonth = calendar.get(Calendar.MONTH)
-        val initialDay = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val initialYear = cal.get(Calendar.YEAR)
+        val initialMonth = cal.get(Calendar.MONTH)
+        val initialDay = cal.get(Calendar.DAY_OF_MONTH)
 
 
         return DatePickerDialog(

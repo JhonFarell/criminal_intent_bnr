@@ -1,6 +1,5 @@
 package com.example.criminalintent.crime_detail
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -11,12 +10,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 import java.util.*
 
 class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
     private var crimeRepository = CrimeRepository.get()
     private val _crime: MutableStateFlow<CrimeModel?> = MutableStateFlow(null)
     val crime: StateFlow<CrimeModel?> = _crime.asStateFlow()
+
 
     init {
         viewModelScope.launch {
@@ -32,6 +33,16 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
 
     fun updateDbValue () {
         crime.value?.let {crimeRepository.updateCrime(it)}
+    }
+
+    fun timeFormat(date: Date): String {
+        val timeFormat: DateFormat = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.ENGLISH)
+        return timeFormat.format(date)
+    }
+
+    fun dateFormat(dateInput: Date): String {
+        val dateFormat: DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.ENGLISH)
+        return dateFormat.format(dateInput)
     }
 
 }

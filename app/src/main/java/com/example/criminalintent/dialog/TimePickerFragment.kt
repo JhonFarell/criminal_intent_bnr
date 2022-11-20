@@ -3,31 +3,49 @@ package com.example.criminalintent.dialog
 import android.app.Dialog
 import android.app.TimePickerDialog
 import android.os.Bundle
-import android.widget.TimePicker
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
-import java.util.*
+import android.icu.util.Calendar
+import android.icu.util.GregorianCalendar
 
-class TimePickDialog: DialogFragment() {
+class TimePickerFragment: DialogFragment() {
 
-    private val args: TimePickerDialogArgs by navArgs()
+    private val args: TimePickerFragmentArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState)
+        super.onCreateDialog(savedInstanceState)
 
-        val onTimeListener = TimePickerDialog.OnTimeSetListener { _: TimePicker, hour , minute ->
-            val resultTime =
+        val cal = Calendar.getInstance()
+        cal.time = args.crimeTime
 
+        val onTimeListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
 
+            val year = cal.get(Calendar.YEAR)
+            val month = cal.get(Calendar.MONTH)
+            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val returnTime = GregorianCalendar(year,month,day,hour, minute).time
+
+            setFragmentResult(REQUEST_KEY_TIME,
+                                bundleOf(BUNDlE_KEY_TIME to returnTime))
         }
 
-        val calendar = Calendar.getInstance()
-        calendar.time = args.crimeTime
-        val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
-        val initialMinute = calendar.get(Calendar.MINUTE)
+
+        val initialHour = cal.get(Calendar.HOUR_OF_DAY)
+        val initialMinute = cal.get(Calendar.MINUTE)
+        val is24HourListener = true
+
+        return TimePickerDialog(
+            requireContext(),
+            onTimeListener,
+            initialHour,
+            initialMinute,
+            is24HourListener
+        )
     }
     companion object {
         const val REQUEST_KEY_TIME = "REQUEST_KEY_TIME"
-        const val BUNDle_KEY_TIME = "BUNDLE_KEY_TIME"
+        const val BUNDlE_KEY_TIME = "BUNDLE_KEY_TIME"
     }
 }
