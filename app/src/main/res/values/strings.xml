@@ -6,4 +6,11 @@
     <string name="crime_solved_label">Solved</string>
     <string name="Title">Title</string>
     <string name="illegal">Illegal</string>
+    <string name="new_crime">New Crime</string>
+    <string name="there_are_no_crimes_you_should_add_one">There are no crimes. You should add one!</string>
+    <string name="add_crime">ADD CRIME</string>
+    <string name="delete_crime">DELETE CRIME</string>
+    <string name="time_sample">11:56</string>
+    <string name="date_sample">Wed May 11</string>
+    <string name="save_crime">SAVE CRIME</string>
 </resources>

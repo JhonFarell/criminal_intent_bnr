@@ -51,17 +51,20 @@ class CrimeRepository private constructor(context: Context,
             context.applicationContext,
             CrimeDatabase::class.java,
             DATABASE_NAME
-        ).createFromAsset(DATABASE_NAME)
-        .addMigrations(MIGRATION_1_2)
+        ).addMigrations(MIGRATION_1_2)
         .build()
 
 
     suspend fun getCrimes(): List<CrimeModel> = database.crimeDao().getCrimes()
     suspend fun getCrime(id: UUID): CrimeModel = database.crimeDao().getCrime(id)
+    suspend fun addCrime(crime: CrimeModel) = database.crimeDao().addCrime(crime)
+    suspend fun deleteCrime(crime: CrimeModel) = database.crimeDao().deleteCrime(crime)
 
     fun updateCrime(crime: CrimeModel) {
        coroutineScope.launch {database.crimeDao().updateCrime(crime)}
     }
+
+
 
     companion object {
         private var INSTANCE: CrimeRepository? = null

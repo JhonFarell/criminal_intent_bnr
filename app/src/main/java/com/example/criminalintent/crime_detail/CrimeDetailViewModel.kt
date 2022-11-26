@@ -22,6 +22,7 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
     init {
         viewModelScope.launch {
             _crime.value = crimeRepository.getCrime(crimeId)
+            val crime = crimeRepository.getCrime(crimeId)
         }
     }
 
@@ -44,6 +45,11 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
         val dateFormat: DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.ENGLISH)
         return dateFormat.format(dateInput)
     }
+
+    suspend fun deleteCrime() {
+        crime.value?.let {crimeRepository.deleteCrime(it)}
+    }
+
 
 }
 

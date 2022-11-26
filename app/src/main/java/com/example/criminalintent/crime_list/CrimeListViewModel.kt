@@ -6,12 +6,12 @@ import com.example.criminalintent.CrimeModel
 import com.example.criminalintent.database.CrimeRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.DateFormat
 import java.util.*
+
 
 class CrimeListViewModel: ViewModel() {
     private val crimeRepository = CrimeRepository.get()
-    val crimes = mutableListOf<CrimeModel>()
+    private val crimes = mutableListOf<CrimeModel>()
 
     init {
         viewModelScope.launch {
@@ -22,5 +22,9 @@ class CrimeListViewModel: ViewModel() {
     suspend fun loadCrimes(): List<CrimeModel>{
 
         return crimeRepository.getCrimes()
+    }
+
+    suspend fun addCrime(crime: CrimeModel) {
+            crimeRepository.addCrime(crime)
     }
 }

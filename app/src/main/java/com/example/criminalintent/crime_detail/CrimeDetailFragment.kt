@@ -1,5 +1,7 @@
 package com.example.criminalintent.crime_detail
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +22,6 @@ import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
 import com.example.criminalintent.dialog.DatePickerFragment
 import com.example.criminalintent.dialog.TimePickerFragment
 import kotlinx.coroutines.launch
-import java.sql.Time
 import java.util.*
 
 class CrimeDetailFragment: Fragment() {
@@ -39,19 +40,12 @@ class CrimeDetailFragment: Fragment() {
 
         val callback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (binding.crimeTitle.text.isBlank()) {
-                    Toast.makeText(activity, "Fill the title!", Toast.LENGTH_SHORT).show()
-                } else {
-                    crimeDetailViewModel.updateDbValue()
-                    findNavController().navigate(CrimeDetailFragmentDirections.backToList())
-                    parentFragmentManager.popBackStack()
+                dialogBuilder(true, )
                 }
             }
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
 
         }
-
-        requireActivity().onBackPressedDispatcher.addCallback(callback)
-    }
 
 
     override fun onCreateView(
@@ -129,22 +123,76 @@ class CrimeDetailFragment: Fragment() {
             if (crimeTitle.text.toString() != crime.title) {
                 crimeTitle.setText(crime.title)
             }
-            crimeDate.text = crimeDetailViewModel.dateFormat(crime.date)
-            crimeTime.text = crimeDetailViewModel.timeFormat(crime.date)
-            crimeSolved.isChecked = crime.isSolved
-            crimeIsCriminal.isChecked = crime.isCriminal
+                updateCrime.isEnabled = crime.title.isNotBlank()
+                crimeDate.text = crimeDetailViewModel.dateFormat(crime.date)
+                crimeTime.text = crimeDetailViewModel.timeFormat(crime.date)
+                crimeSolved.isChecked = crime.isSolved
+                crimeIsCriminal.isChecked = crime.isCriminal
 
-            crimeDate.setOnClickListener {
-                findNavController().navigate(
-                    CrimeDetailFragmentDirections.selectDate(crime.date)
-                )
-            }
+                crimeDate.setOnClickListener {
+                    findNavController().navigate(
+                        CrimeDetailFragmentDirections.selectDate(crime.date)
+                    )
+                }
 
-            crimeTime.setOnClickListener {
-                findNavController().navigate(
-                    CrimeDetailFragmentDirections.selectTime(crime.date)
-                )
+                crimeTime.setOnClickListener {
+                    findNavController().navigate(
+                        CrimeDetailFragmentDirections.selectTime(crime.date)
+                    )
+                }
+
+                deleteCrime.setOnClickListener {
+                    dialogBuilder(false)
+                }
+                updateCrime.setOnClickListener {
+                    crimeDetailViewModel.updateDbValue()
+                    Toast.makeText(activity, "Crime saved", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(
+                        CrimeDetailFragmentDirections.backToList()
+                    )
+                }
             }
+        }
+
+    fun dialogBuilder(dialogType: Boolean) {
+
+
+        val text = when (dialogType) {
+            true -> "All changes will be lost. Are you sure?"
+            else -> "Are you sure?"
+        }
+
+        val positiveButton = when (dialogType) {
+            true -> {dialog: DialogInterface, which: Int ->
+                    findNavController().navigate(CrimeDetailFragmentDirections.backToList())
+                    Toast.makeText(activity, "Changes discard", Toast.LENGTH_SHORT).show()
+                }
+            else -> {
+                {dialog: DialogInterface, which: Int ->
+                    lifecycleScope.launch {crimeDetailViewModel.deleteCrime()}
+                    findNavController().navigate(CrimeDetailFragmentDirections.backToList())
+                    Toast.makeText(activity, "Crime deleted", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+
+        val negativeButton = when (dialogType) {
+            true -> { dialog: DialogInterface, which: Int ->
+                Toast.makeText(activity, "State isn't lost", Toast.LENGTH_SHORT).show()
+            }
+            else -> { dialog: DialogInterface, which: Int ->
+                Toast.makeText(activity, "Crime delete canceled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val builder = AlertDialog.Builder(activity)
+
+        with(builder) {
+            setTitle("$text")
+            setPositiveButton("OK", DialogInterface.OnClickListener(positiveButton))
+            setNegativeButton("CANCEL", DialogInterface.OnClickListener(negativeButton))
+            builder.show()
         }
     }
 }
