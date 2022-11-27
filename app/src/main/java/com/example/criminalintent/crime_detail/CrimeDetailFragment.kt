@@ -2,7 +2,12 @@ package com.example.criminalintent.crime_detail
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,34 +23,40 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.CrimeModel
+import com.example.criminalintent.R
 import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
 import com.example.criminalintent.dialog.DatePickerFragment
 import com.example.criminalintent.dialog.TimePickerFragment
 import kotlinx.coroutines.launch
+import android.text.format.DateFormat
+import androidx.activity.result.contract.ActivityResultContracts
 import java.util.*
 
-class CrimeDetailFragment: Fragment() {
+
+private const val DATE_FORMAT = "EEE, MMM, dd"
+
+class CrimeDetailFragment : Fragment() {
+
     private var _binding: FragmentCrimeDetailBinding? = null
     private val binding
-    get() = checkNotNull(_binding) {
-        "Can't access binding couse it's null."
-    }
+        get() = checkNotNull(_binding) {
+            "Can't access binding couse it's null."
+        }
     private val args: CrimeDetailFragmentArgs by navArgs()
     private val crimeDetailViewModel: CrimeDetailViewModel by viewModels {
         CrimeDetailViewModelFactory(args.crimeId)
     }
 
+    private val selectSuspect = registerForActivityResult (
+        ActivityResultContracts.PickContact()) {
+        uri: Uri? -> uri?.let {parseContactsSelection(it)}
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val callback = object: OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                dialogBuilder(true, )
-                }
-            }
-        requireActivity().onBackPressedDispatcher.addCallback(callback)
-
-        }
+        backPress()
+    }
 
 
     override fun onCreateView(
@@ -62,7 +73,7 @@ class CrimeDetailFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
-            crimeTitle.doOnTextChanged{ text, _, _, _ ->
+            crimeTitle.doOnTextChanged { text, _, _, _ ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(title = text.toString())
                 }
@@ -70,21 +81,19 @@ class CrimeDetailFragment: Fragment() {
 
             viewLifecycleOwner.lifecycleScope.launch {
                 viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    crimeDetailViewModel.crime.collect {
-                        crime -> crime?.let { updateUi(it) }
+                    crimeDetailViewModel.crime.collect { crime ->
+                        crime?.let { updateUi(it) }
                     }
                 }
             }
 
-            crimeSolved.setOnCheckedChangeListener{
-                _, isChecked ->
+            crimeSolved.setOnCheckedChangeListener { _, isChecked ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(isSolved = isChecked)
                 }
             }
 
-            crimeIsCriminal.setOnCheckedChangeListener {
-                _, isChecked ->
+            crimeIsCriminal.setOnCheckedChangeListener { _, isChecked ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(isCriminal = isChecked)
                 }
@@ -94,7 +103,7 @@ class CrimeDetailFragment: Fragment() {
 
         setFragmentResultListener(
             DatePickerFragment.REQUEST_KEY_DATE
-        ) { _, bundle ->  
+        ) { _, bundle ->
             val newDate =
                 bundle.getSerializable(DatePickerFragment.BUNDLE_KEY_DATE) as Date
             crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
@@ -102,8 +111,7 @@ class CrimeDetailFragment: Fragment() {
 
         setFragmentResultListener(
             TimePickerFragment.REQUEST_KEY_TIME
-        ) {
-            _, bundle ->
+        ) { _, bundle ->
             val newTime =
                 bundle.getSerializable(TimePickerFragment.BUNDlE_KEY_TIME) as Date
 
@@ -111,6 +119,11 @@ class CrimeDetailFragment: Fragment() {
             crimeDetailViewModel.updateCrime { it.copy(date = newTime) }
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        backPress()
     }
 
     override fun onDestroyView() {
@@ -123,38 +136,116 @@ class CrimeDetailFragment: Fragment() {
             if (crimeTitle.text.toString() != crime.title) {
                 crimeTitle.setText(crime.title)
             }
-                updateCrime.isEnabled = crime.title.isNotBlank()
-                crimeDate.text = crimeDetailViewModel.dateFormat(crime.date)
-                crimeTime.text = crimeDetailViewModel.timeFormat(crime.date)
-                crimeSolved.isChecked = crime.isSolved
-                crimeIsCriminal.isChecked = crime.isCriminal
+            updateCrime.isEnabled = crime.title.isNotBlank()
+            crimeDate.text = crimeDetailViewModel.dateFormat(crime.date)
+            crimeTime.text = crimeDetailViewModel.timeFormat(crime.date)
+            crimeSolved.isChecked = crime.isSolved
+            crimeIsCriminal.isChecked = crime.isCriminal
+            chooseSuspect.text = crime.suspect.ifEmpty {
+                getString(R.string.choose_suspect)
+            }
 
-                crimeDate.setOnClickListener {
-                    findNavController().navigate(
-                        CrimeDetailFragmentDirections.selectDate(crime.date)
+
+            crimeDate.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectDate(crime.date)
+                )
+            }
+
+            crimeTime.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectTime(crime.date)
+                )
+            }
+
+            deleteCrime.setOnClickListener {
+                dialogBuilder(false)
+            }
+
+            updateCrime.setOnClickListener {
+                crimeDetailViewModel.updateDbValue()
+                Toast.makeText(activity, "Crime saved", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.backToList()
+                )
+            }
+
+            sendCrimeReport.setOnClickListener {
+                val reportIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, getCrimeReport(crime))
+                    putExtra(
+                        Intent.EXTRA_SUBJECT,
+                        getString(R.string.crime_report_subject)
                     )
                 }
+                val chooserIntent = Intent.createChooser(
+                    reportIntent,
+                    getString(R.string.send_report)
+                )
+                startActivity(chooserIntent)
+            }
 
-                crimeTime.setOnClickListener {
-                    findNavController().navigate(
-                        CrimeDetailFragmentDirections.selectTime(crime.date)
-                    )
-                }
+            chooseSuspect.setOnClickListener {
+                selectSuspect.launch(null)
+            }
 
-                deleteCrime.setOnClickListener {
-                    dialogBuilder(false)
-                }
-                updateCrime.setOnClickListener {
-                    crimeDetailViewModel.updateDbValue()
-                    Toast.makeText(activity, "Crime saved", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(
-                        CrimeDetailFragmentDirections.backToList()
-                    )
+            val selectSuspectIntent = selectSuspect.contract.createIntent(
+                requireContext(),
+                null
+            )
+            chooseSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
+        }
+    }
+
+    private fun getCrimeReport(crime: CrimeModel): String {
+        val solvedString = if (crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else getString(R.string.crime_report_unsolved)
+
+        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+        val suspectText = if (crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return getString(
+            R.string.crime_report,
+            crime.title, dateString, solvedString, suspectText
+        )
+    }
+
+    private fun parseContactsSelection (contactsUri: Uri) {
+        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+
+        val queryCursor = requireActivity().contentResolver
+            .query(contactsUri, queryFields, null, null, null)
+
+        queryCursor?.use {
+            cursor ->
+            if (cursor.moveToFirst()) {
+                val suspect = cursor.getString(0)
+
+                crimeDetailViewModel.updateCrime {
+                    oldCrime -> oldCrime.copy(suspect = suspect)
                 }
             }
         }
 
-    fun dialogBuilder(dialogType: Boolean) {
+    }
+
+    private fun canResolveIntent (intent: Intent): Boolean {
+        val packageManager = requireActivity().packageManager
+        val resolveActivity: ResolveInfo? =
+            packageManager.resolveActivity(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
+        return resolveActivity != null
+    }
+
+    private fun dialogBuilder(dialogType: Boolean) {
 
 
         val text = when (dialogType) {
@@ -163,13 +254,13 @@ class CrimeDetailFragment: Fragment() {
         }
 
         val positiveButton = when (dialogType) {
-            true -> {dialog: DialogInterface, which: Int ->
-                    findNavController().navigate(CrimeDetailFragmentDirections.backToList())
-                    Toast.makeText(activity, "Changes discard", Toast.LENGTH_SHORT).show()
-                }
+            true -> { dialog: DialogInterface, which: Int ->
+                findNavController().navigate(CrimeDetailFragmentDirections.backToList())
+                Toast.makeText(activity, "Changes discard", Toast.LENGTH_SHORT).show()
+            }
             else -> {
-                {dialog: DialogInterface, which: Int ->
-                    lifecycleScope.launch {crimeDetailViewModel.deleteCrime()}
+                { dialog: DialogInterface, which: Int ->
+                    lifecycleScope.launch { crimeDetailViewModel.deleteCrime() }
                     findNavController().navigate(CrimeDetailFragmentDirections.backToList())
                     Toast.makeText(activity, "Crime deleted", Toast.LENGTH_SHORT).show()
                 }
@@ -194,5 +285,14 @@ class CrimeDetailFragment: Fragment() {
             setNegativeButton("CANCEL", DialogInterface.OnClickListener(negativeButton))
             builder.show()
         }
+    }
+
+    private fun backPress() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                dialogBuilder(true)
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
     }
 }

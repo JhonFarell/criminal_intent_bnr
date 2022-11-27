@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/crime_title_hint"
         android:importantForAutofill="no"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/default_margin_top"
         android:inputType="text"/>
 
     <TextView
@@ -35,16 +35,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/crime_details_label"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/default_margin_top"
         android:textAppearance="?attr/textAppearanceHeadline5"/>
 
     <Button
         app:layout_constraintTop_toBottomOf="@id/details_text"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/crime_time"
         android:id="@+id/crime_date"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/default_button_height"
+        android:layout_marginTop="@dimen/default_margin_top"
         tools:text="@string/date_sample"/>
 
     <Button
@@ -52,9 +53,9 @@
         app:layout_constraintTop_toTopOf="@id/crime_date"
         app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/crime_time"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:layout_marginEnd="20dp"
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/default_button_height"
+
         tools:text="@string/time_sample"/>
 
     <CheckBox
@@ -73,22 +74,41 @@
         android:text="@string/illegal"/>
 
     <Button
+        android:id="@+id/choose_suspect"
+        android:text="@string/choose_suspect"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/default_button_height"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/crime_is_criminal"
+        android:layout_marginTop="@dimen/default_margin_top"
+        />
+
+    <Button
+        android:id="@+id/send_crime_report"
+        app:layout_constraintTop_toBottomOf="@id/choose_suspect"
+        android:layout_marginTop="@dimen/default_margin_top"
+        android:text="@string/send_crime_report"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/default_button_height"/>
+
+    <Button
         android:id="@+id/delete_crime"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/crime_is_criminal"
+        app:layout_constraintTop_toBottomOf="@id/send_crime_report"
+        app:layout_constraintEnd_toStartOf="@id/update_crime"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:text="@string/delete_crime"
         android:layout_width="@dimen/button_width"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/default_button_height"
         />
 
     <Button
         android:id="@+id/update_crime"
-        app:layout_constraintTop_toBottomOf="@id/delete_crime"
-        app:layout_constraintStart_toStartOf="@id/delete_crime"
-        app:layout_constraintEnd_toEndOf="@id/delete_crime"
+        app:layout_constraintStart_toEndOf="@id/delete_crime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/delete_crime"
         android:layout_width="@dimen/button_width"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/default_button_height"
         android:text="@string/save_crime"/>
 
 
