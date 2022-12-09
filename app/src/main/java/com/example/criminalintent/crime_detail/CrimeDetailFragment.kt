@@ -1,5 +1,6 @@
 package com.example.criminalintent.crime_detail
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -29,7 +30,10 @@ import com.example.criminalintent.dialog.DatePickerFragment
 import com.example.criminalintent.dialog.TimePickerFragment
 import kotlinx.coroutines.launch
 import android.text.format.DateFormat
+import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import java.util.*
 
 
@@ -53,18 +57,17 @@ class CrimeDetailFragment : Fragment() {
 
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        backPress()
-    }
+    private val permissionRequestLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
 
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
+        backPress()
         _binding = FragmentCrimeDetailBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -98,6 +101,15 @@ class CrimeDetailFragment : Fragment() {
                     oldCrime.copy(isCriminal = isChecked)
                 }
             }
+            chooseSuspect.setOnClickListener {
+                selectSuspect.launch(null)
+            }
+
+            val selectSuspectIntent = selectSuspect.contract.createIntent(
+                requireContext(),
+                null
+            )
+            chooseSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
 
         }
 
@@ -120,6 +132,7 @@ class CrimeDetailFragment : Fragment() {
         }
 
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -144,6 +157,8 @@ class CrimeDetailFragment : Fragment() {
             chooseSuspect.text = crime.suspect.ifEmpty {
                 getString(R.string.choose_suspect)
             }
+            callSuspect.isEnabled = !chooseSuspect.text.equals("CHOOSE SUSPECT")
+
 
 
             crimeDate.setOnClickListener {
@@ -186,15 +201,23 @@ class CrimeDetailFragment : Fragment() {
                 startActivity(chooserIntent)
             }
 
-            chooseSuspect.setOnClickListener {
-                selectSuspect.launch(null)
+            callSuspect.setOnClickListener{
+                val check = context?.let {
+                    ContextCompat.checkSelfPermission(it, Manifest.permission.READ_CONTACTS)
+                }
+
+                when (check) {
+                    PackageManager.PERMISSION_DENIED -> {
+                        permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS)
+                    }
+                    else -> {
+                        val suspectName = crimeDetailViewModel.crime.value?.suspect.toString()
+                        parseContactsToMakeACall("$suspectName")
+
+                    }
+                }
             }
 
-            val selectSuspectIntent = selectSuspect.contract.createIntent(
-                requireContext(),
-                null
-            )
-            chooseSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
         }
     }
 
@@ -209,11 +232,67 @@ class CrimeDetailFragment : Fragment() {
         } else {
             getString(R.string.crime_report_suspect, crime.suspect)
         }
+        val isIllegal = when (crime.isCriminal) {
+            true -> { getString(R.string.is_illegal) }
+            else -> { if (crime.suspect.isBlank()) {
+                getString(R.string.is_legal_without_suspect)
+             } else { getString(R.string.is_legal_with_suspect) }
+            }
+        }
 
         return getString(
             R.string.crime_report,
-            crime.title, dateString, solvedString, suspectText
+            crime.title, dateString, solvedString, suspectText, isIllegal
         )
+    }
+
+    private fun parseContactsToMakeACall (suspect: String) {
+        val uri = ContactsContract.Contacts.CONTENT_URI
+        val name = ContactsContract.Contacts.DISPLAY_NAME
+        val id = ContactsContract.Contacts._ID
+        lateinit var suspectId: String
+        lateinit var suspectNumber: String
+
+        val queryFields = arrayOf(name,id)
+
+        val cursor = requireActivity().contentResolver
+            .query(uri, queryFields, "$name=?", arrayOf("$suspect"), null)
+
+        cursor?.use {
+            cursor ->
+
+            if (cursor.moveToFirst()) {
+                suspectId = cursor.getString(1).toString()
+            }
+        }
+
+        //cdk - means CommonDataKinds
+        val cdkUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+        val cdkId = ContactsContract.CommonDataKinds.Phone.CONTACT_ID
+        val cdkPhoneNumber = ContactsContract.CommonDataKinds.Phone.NUMBER
+
+        val commonDataKindsQueryFields = arrayOf(cdkId, cdkPhoneNumber)
+
+        val commonDataKindsCursor = requireActivity().contentResolver
+            .query(cdkUri, commonDataKindsQueryFields, "$cdkId=?",
+                arrayOf("$suspectId"), null)
+
+
+        commonDataKindsCursor?.use {
+
+            if (it.moveToFirst()) {
+                suspectNumber = it.getString(1)
+
+                val number = Uri.parse("tel:$suspectNumber")
+                val callSuspect = Intent(Intent.ACTION_DIAL, number)
+                startActivity(callSuspect)
+            } else {
+                suspectNumber = ""
+                Toast.makeText(activity, "There is no phone number for ${crimeDetailViewModel.crime.value?.suspect}"
+                    ,Toast.LENGTH_SHORT).show()
+            }
+
+        }
     }
 
     private fun parseContactsSelection (contactsUri: Uri) {
@@ -254,25 +333,23 @@ class CrimeDetailFragment : Fragment() {
         }
 
         val positiveButton = when (dialogType) {
-            true -> { dialog: DialogInterface, which: Int ->
+            true -> { _: DialogInterface, _: Int ->
                 findNavController().navigate(CrimeDetailFragmentDirections.backToList())
                 Toast.makeText(activity, "Changes discard", Toast.LENGTH_SHORT).show()
             }
-            else -> {
-                { dialog: DialogInterface, which: Int ->
+            else -> { _: DialogInterface, _: Int ->
                     lifecycleScope.launch { crimeDetailViewModel.deleteCrime() }
                     findNavController().navigate(CrimeDetailFragmentDirections.backToList())
                     Toast.makeText(activity, "Crime deleted", Toast.LENGTH_SHORT).show()
-                }
             }
         }
 
 
         val negativeButton = when (dialogType) {
-            true -> { dialog: DialogInterface, which: Int ->
+            true -> { _: DialogInterface, _: Int ->
                 Toast.makeText(activity, "State isn't lost", Toast.LENGTH_SHORT).show()
             }
-            else -> { dialog: DialogInterface, which: Int ->
+            else -> { _: DialogInterface, _: Int ->
                 Toast.makeText(activity, "Crime delete canceled", Toast.LENGTH_SHORT).show()
             }
         }
@@ -280,7 +357,7 @@ class CrimeDetailFragment : Fragment() {
         val builder = AlertDialog.Builder(activity)
 
         with(builder) {
-            setTitle("$text")
+            setTitle(text)
             setPositiveButton("OK", DialogInterface.OnClickListener(positiveButton))
             setNegativeButton("CANCEL", DialogInterface.OnClickListener(negativeButton))
             builder.show()

@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.criminalintent">
 
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
     <application
         android:name=".CriminalIntentApplication"
         android:allowBackup="true"
@@ -23,7 +25,7 @@
 <queries>
     <intent>
         <action android:name="android.intent.action.PICK"/>
-        <data android:mimeType="vnd.android.cursor.dir/contacts"/>
+        <data android:mimeType="vnd.android.cursor.dir/contact"/>
     </intent>
 </queries>
 </manifest>
