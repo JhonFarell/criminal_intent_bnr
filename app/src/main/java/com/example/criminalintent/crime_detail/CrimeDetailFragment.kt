@@ -178,6 +178,11 @@ class CrimeDetailFragment : Fragment() {
             }
 
             updateCrime.setOnClickListener {
+
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(isNew = false)
+                }
+
                 crimeDetailViewModel.updateDbValue()
                 Toast.makeText(activity, "Crime saved", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(
@@ -334,9 +339,15 @@ class CrimeDetailFragment : Fragment() {
 
         val positiveButton = when (dialogType) {
             true -> { _: DialogInterface, _: Int ->
+                if (crimeDetailViewModel.crime.value?.isNew == true) {
+                    lifecycleScope.launch {
+                        crimeDetailViewModel.deleteCrime()
+                    }
+                }
                 findNavController().navigate(CrimeDetailFragmentDirections.backToList())
                 Toast.makeText(activity, "Changes discard", Toast.LENGTH_SHORT).show()
             }
+
             else -> { _: DialogInterface, _: Int ->
                     lifecycleScope.launch { crimeDetailViewModel.deleteCrime() }
                     findNavController().navigate(CrimeDetailFragmentDirections.backToList())
