@@ -14,5 +14,6 @@ data class CrimeModel(
     val isSolved: Boolean,
     val isCriminal: Boolean,
     val suspect: String = "",
-    val isNew: Boolean
+    val isNew: Boolean,
+    val image: String? = null
 )

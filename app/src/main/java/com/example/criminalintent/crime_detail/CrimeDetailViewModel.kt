@@ -17,7 +17,7 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
     private var crimeRepository = CrimeRepository.get()
     private val _crime: MutableStateFlow<CrimeModel?> = MutableStateFlow(null)
     val crime: StateFlow<CrimeModel?> = _crime.asStateFlow()
-
+    var photoName: String? = null
 
     init {
         viewModelScope.launch {

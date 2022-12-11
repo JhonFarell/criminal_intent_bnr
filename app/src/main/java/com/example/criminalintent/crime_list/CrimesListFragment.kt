@@ -90,7 +90,8 @@ class CrimesListFragment(): Fragment() {
                 date = Date(),
                 isSolved = false,
                 isCriminal = false,
-                isNew = true
+                isNew = true,
+                image = null
             )
             crimeListViewModel.addCrime(newCrime)
             findNavController().navigate(

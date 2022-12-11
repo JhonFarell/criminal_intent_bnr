@@ -8,29 +8,76 @@
     android:layout_margin="16dp"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/title_text"
-        app:layout_constraintStart_toStartOf="parent"
+    <LinearLayout
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/Title"
-        android:textAppearance="?attr/textAppearanceHeadline5"/>
-
-    <EditText
-        app:layout_constraintTop_toBottomOf="@id/title_text"
         app:layout_constraintStart_toStartOf="parent"
-        android:id="@+id/crime_title"
+        android:id="@+id/container_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/crime_title_hint"
-        android:importantForAutofill="no"
-        android:layout_marginTop="@dimen/default_margin_top"
-        android:inputType="text"/>
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/no_image_text"
+                android:text="NO IMAGE"
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                tools:visibility="visible"/>
+
+            <ImageView
+                android:id="@+id/crime_photo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                tools:background="@color/black"
+                android:visibility="visible"/>
+
+            <ImageButton
+                android:id="@+id/take_photo_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_baseline_photo_camera_24"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/title_layout"
+            app:layout_constraintStart_toEndOf="@id/crime_photo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/Title"
+                android:textAppearance="?attr/textAppearanceHeadline5"/>
+
+            <EditText
+                android:id="@+id/crime_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/crime_title_hint"
+                android:importantForAutofill="no"
+                android:layout_marginTop="@dimen/default_margin_top"
+                android:inputType="text" />
+
+        </LinearLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/details_text"
-        app:layout_constraintTop_toBottomOf="@id/crime_title"
+        app:layout_constraintTop_toBottomOf="@id/container_linear_layout"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -30,10 +30,13 @@ import com.example.criminalintent.dialog.DatePickerFragment
 import com.example.criminalintent.dialog.TimePickerFragment
 import kotlinx.coroutines.launch
 import android.text.format.DateFormat
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.view.doOnLayout
+import com.example.criminalintent.getScaledBitmap
+import java.io.File
 import java.util.*
 
 
@@ -60,6 +63,15 @@ class CrimeDetailFragment : Fragment() {
     private val permissionRequestLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
 
+        }
+
+    private val takePhoto = registerForActivityResult (
+        ActivityResultContracts.TakePicture()) { didTakePhoto: Boolean ->
+        if (didTakePhoto && crimeDetailViewModel.photoName!=null) {
+            crimeDetailViewModel.updateCrime { oldCrime ->
+                oldCrime.copy(image = crimeDetailViewModel.photoName)
+                }
+            }
         }
 
     override fun onCreateView(
@@ -111,6 +123,22 @@ class CrimeDetailFragment : Fragment() {
             )
             chooseSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
 
+            takePhotoButton.setOnClickListener {
+                crimeDetailViewModel.photoName ="IMG_${Date()}.JPEG"
+                val photoFile= File(requireContext().applicationContext.filesDir,
+                    crimeDetailViewModel.photoName)
+                val photoUri=FileProvider.getUriForFile(requireContext(),
+                "com.example.criminalintent.fileprovider",
+                photoFile)
+                takePhoto.launch(photoUri)
+            }
+
+            val cameraIntent = takePhoto.contract.createIntent(
+                requireContext(),
+                null
+            )
+            takePhotoButton.isEnabled=canResolveIntent(cameraIntent)
+
         }
 
         setFragmentResultListener(
@@ -157,7 +185,20 @@ class CrimeDetailFragment : Fragment() {
             chooseSuspect.text = crime.suspect.ifEmpty {
                 getString(R.string.choose_suspect)
             }
-            callSuspect.isEnabled = !chooseSuspect.text.equals("CHOOSE SUSPECT")
+            callSuspect.isEnabled = !chooseSuspect.text.equals(
+                getString(R.string.choose_suspect))
+
+           when (checkIfCrimeHasPhoto()) {
+                false -> {
+                    crimePhoto.visibility = View.VISIBLE
+                    noImageText.visibility = View.GONE
+                    updatePhoto(crime.image)
+                }
+                else -> {
+                    crimePhoto.visibility = View.GONE
+                    noImageText.visibility = View.VISIBLE
+                }
+            }
 
 
 
@@ -382,5 +423,36 @@ class CrimeDetailFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(callback)
+    }
+
+    private fun updatePhoto(photoFileName: String?) {
+        if (binding.crimePhoto.tag!=photoFileName) {
+            val photoFile = photoFileName?.let {
+                File(requireContext().applicationContext.filesDir, it)
+            }
+
+            if (photoFile?.exists() == true) {
+                binding.crimePhoto.doOnLayout {
+                    val scaledBitmap = getScaledBitmap(
+                        photoFile.path,
+                        it.width,
+                        it.height
+                    )
+                    binding.apply {
+                        crimePhoto.setImageBitmap(scaledBitmap)
+                        crimePhoto.tag = photoFileName
+                    }
+                }
+            } else {
+                binding.apply {
+                    crimePhoto.setImageBitmap(null)
+                    crimePhoto.tag = null
+                }
+            }
+        }
+    }
+
+    private fun checkIfCrimeHasPhoto (): Boolean {
+        return crimeDetailViewModel.crime.value?.image == null
     }
 }
