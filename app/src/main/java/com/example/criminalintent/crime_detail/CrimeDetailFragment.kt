@@ -61,9 +61,7 @@ class CrimeDetailFragment : Fragment() {
     }
 
     private val permissionRequestLauncher: ActivityResultLauncher<String> =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-
-        }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()){}
 
     private val takePhoto = registerForActivityResult (
         ActivityResultContracts.TakePicture()) { didTakePhoto: Boolean ->
@@ -139,6 +137,16 @@ class CrimeDetailFragment : Fragment() {
             )
             takePhotoButton.isEnabled=canResolveIntent(cameraIntent)
 
+            if (crimePhoto.visibility == View.VISIBLE) {
+                crimePhoto.setOnClickListener {
+                    findNavController().navigate(CrimeDetailFragmentDirections.zoomInPhoto(
+                        crimeDetailViewModel.crime.value?.image.toString()))
+                }
+            } else {
+                crimePhoto.isEnabled = false
+            }
+
+
         }
 
         setFragmentResultListener(
@@ -160,7 +168,6 @@ class CrimeDetailFragment : Fragment() {
         }
 
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -215,7 +222,7 @@ class CrimeDetailFragment : Fragment() {
             }
 
             deleteCrime.setOnClickListener {
-                dialogBuilder(false)
+                dialogBuilder(1)
             }
 
             updateCrime.setOnClickListener {
@@ -370,16 +377,16 @@ class CrimeDetailFragment : Fragment() {
         return resolveActivity != null
     }
 
-    private fun dialogBuilder(dialogType: Boolean) {
+    private fun dialogBuilder(dialogType: Int) {
 
 
         val text = when (dialogType) {
-            true -> "All changes will be lost. Are you sure?"
+            0 -> "All changes will be lost. Are you sure?"
             else -> "Are you sure?"
         }
 
         val positiveButton = when (dialogType) {
-            true -> { _: DialogInterface, _: Int ->
+            0 -> { _: DialogInterface, _: Int ->
                 if (crimeDetailViewModel.crime.value?.isNew == true) {
                     lifecycleScope.launch {
                         crimeDetailViewModel.deleteCrime()
@@ -398,7 +405,7 @@ class CrimeDetailFragment : Fragment() {
 
 
         val negativeButton = when (dialogType) {
-            true -> { _: DialogInterface, _: Int ->
+            0 -> { _: DialogInterface, _: Int ->
                 Toast.makeText(activity, "State isn't lost", Toast.LENGTH_SHORT).show()
             }
             else -> { _: DialogInterface, _: Int ->
@@ -419,7 +426,7 @@ class CrimeDetailFragment : Fragment() {
     private fun backPress() {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                dialogBuilder(true)
+                dialogBuilder(0)
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(callback)

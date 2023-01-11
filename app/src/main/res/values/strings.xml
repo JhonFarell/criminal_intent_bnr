@@ -28,4 +28,5 @@ The crime was discovered on %2$s. %3$s, and %4$s %5$s
     <string name="is_legal_without_suspect">It\'s a lite crime. Look for a suspect!</string>
     <string name="is_legal_with_suspect">It\'s a lite crime. You should talk about it with the suspect.</string>
     <string name="call">CALL</string>
+    <string name="ok">OK</string>
 </resources>
