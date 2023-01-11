@@ -15,7 +15,6 @@ class CrimeListViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            delay(5000)
             crimes += loadCrimes()
         }
     }

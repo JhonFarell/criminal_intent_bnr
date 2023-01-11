@@ -19,10 +19,10 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
     val crime: StateFlow<CrimeModel?> = _crime.asStateFlow()
     var photoName: String? = null
 
+    //Gets crime data from DB
     init {
         viewModelScope.launch {
             _crime.value = crimeRepository.getCrime(crimeId)
-            val crime = crimeRepository.getCrime(crimeId)
         }
     }
 
@@ -37,12 +37,25 @@ class CrimeDetailViewModel(crimeId: UUID): ViewModel () {
     }
 
     fun timeFormat(date: Date): String {
-        val timeFormat: DateFormat = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.ENGLISH)
+        val timeFormat: DateFormat = when (Locale.getDefault().language) {
+        "en" -> {
+            DateFormat.getTimeInstance(DateFormat.SHORT, Locale.ENGLISH)}
+        else -> {
+            DateFormat.getTimeInstance(DateFormat.SHORT, Locale("es", "ES"))
+        } }
         return timeFormat.format(date)
     }
 
     fun dateFormat(dateInput: Date): String {
-        val dateFormat: DateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.ENGLISH)
+        val dateFormat: DateFormat = when (Locale.getDefault().language) {
+            "en" -> {
+                DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.ENGLISH)
+            }
+            else -> {
+                DateFormat.getDateInstance(DateFormat.MEDIUM, Locale("es", "ES"))
+            }
+        }
+
         return dateFormat.format(dateInput)
     }
 

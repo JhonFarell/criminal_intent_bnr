@@ -135,17 +135,17 @@
     <Button
         android:id="@+id/send_crime_report"
         app:layout_constraintTop_toBottomOf="@id/choose_suspect"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@id/crime_date"
         android:layout_marginTop="@dimen/default_margin_top"
         android:text="@string/send_crime_report"
-        android:layout_width="200dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="@dimen/default_button_height"/>
 
     <Button
         android:id="@+id/call_suspect"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/crime_time"
         app:layout_constraintTop_toTopOf="@id/send_crime_report"
-        android:layout_width="120dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="@dimen/default_button_height"
         android:text="@string/call"
         app:icon="@drawable/ic_baseline_call_24"
