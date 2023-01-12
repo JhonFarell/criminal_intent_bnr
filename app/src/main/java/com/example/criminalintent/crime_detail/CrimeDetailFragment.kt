@@ -448,12 +448,17 @@ class CrimeDetailFragment : Fragment() {
                     binding.apply {
                         crimePhoto.setImageBitmap(scaledBitmap)
                         crimePhoto.tag = photoFileName
+                        binding.crimePhoto.contentDescription =
+                            getString(R.string.crime_photo_image_description)
                     }
                 }
             } else {
                 binding.apply {
                     crimePhoto.setImageBitmap(null)
                     crimePhoto.tag = null
+                    binding.crimePhoto.contentDescription =
+                        getString(R.string.crime_photo_image_not_set)
+
                 }
             }
         }

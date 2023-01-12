@@ -29,4 +29,9 @@ The crime was discovered on %2$s. %3$s, and %4$s %5$s
     <string name="is_legal_with_suspect">It\'s a lite crime. You should talk about it with the suspect.</string>
     <string name="call">CALL</string>
     <string name="ok">OK</string>
+    <string name="no_image">NO IMAGE</string>
+    <string name="crime_photo">Crime photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="crime_photo_image_description">Crime photo is set</string>
+    <string name="crime_photo_image_not_set">Crime image is not set</string>
 </resources>

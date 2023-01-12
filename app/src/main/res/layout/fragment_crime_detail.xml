@@ -23,7 +23,7 @@
 
             <TextView
                 android:id="@+id/no_image_text"
-                android:text="NO IMAGE"
+                android:text="@string/no_image"
                 android:gravity="center"
                 android:visibility="gone"
                 android:layout_width="100dp"
@@ -32,6 +32,7 @@
 
             <ImageView
                 android:id="@+id/crime_photo"
+                android:contentDescription="@string/crime_photo"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_width="100dp"
@@ -41,7 +42,8 @@
 
             <ImageButton
                 android:id="@+id/take_photo_button"
-                android:tint="@color/grey"
+                android:contentDescription="@string/take_photo"
+                app:tint="@color/grey"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"

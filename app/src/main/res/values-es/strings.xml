@@ -30,4 +30,8 @@ El crimen fue descubierto el %2$s. %3$s, y %4$s
     <string name="is_legal_with_suspect">Es un crimen ligero. Deberías hablarlo con el sospechoso.</string>
     <string name="call">LLAMADA</string>
     <string name="ok">OK</string>
+    <string name="no_image">SIN IMÁGEN</string>
+    <string name="crime_photo">Crime photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="crime_photo_image_not_set">Crime image is not set</string>
 </resources>
